@@ -64,10 +64,10 @@ ImFont* pixel_smol = nullptr;
 }
 
 static float fixLoginTimeout = 60.0f;
-static bool MenDeal = true; // Auto open on game load
+static bool MenDeal = true; // Auto open overlay on game load
 
-// 💜 PREMIUM NEON ACCENT COLOR & TRANSPARENCY
-static float menuAccentColor[4] = { 0.70f, 0.25f, 0.95f, 1.0f }; // Neon Purple
+// 💜 PREMIUM CYBER NEON PURPLE COLOR & TRANSPARENCY
+static float menuAccentColor[4] = { 0.68f, 0.28f, 0.98f, 1.0f }; 
 static float menuAlpha = 0.92f;
 static int currentTab = 0; // 0: Aimbot, 1: Visuals, 2: Misc, 3: Settings
 
@@ -75,16 +75,16 @@ static int currentTab = 0; // 0: Aimbot, 1: Visuals, 2: Misc, 3: Settings
 static bool streamProofEnabled = false;
 
 // --- CUSTOM COLOR VARIABLES ---
-static float espLineColor[4] = { 1.0f, 0.2f, 0.2f, 1.0f };
-static float espBoxColor[4]  = { 0.2f, 1.0f, 0.3f, 1.0f };
-static float fovCircleColor[4] = { 0.2f, 0.7f, 1.0f, 0.8f };
+static float espLineColor[4] = { 0.95f, 0.25f, 0.25f, 1.0f };
+static float espBoxColor[4]  = { 0.25f, 0.95f, 0.35f, 1.0f };
+static float fovCircleColor[4] = { 0.25f, 0.75f, 1.0f, 0.85f };
 
 // --- LOGIN STATE VARIABLES ---
 static bool isLoggedIn = false;
 static bool isAuthenticating = false;
 static char licenseKey[128] = "";
 static std::string loginMessage = "Please Enter or Paste License Key";
-static ImVec4 loginMsgColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+static ImVec4 loginMsgColor = ImVec4(0.85f, 0.85f, 0.85f, 1.0f);
 static std::string keyExpiryDate = "Pending...";
 static bool apiConnected = false;
 
@@ -131,7 +131,7 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // === PREMIUM GLASS UI STYLE ===
+    // === PREMIUM DARK GLASS UI STYLE ===
     ImGuiStyle& style = ImGui::GetStyle();
     style.Alpha = 1.0f;
     style.WindowRounding = 14.0f;     
@@ -364,7 +364,6 @@ ImFont* Urbanist;
         if (p.x > screenWidth) p.x = 0;
 
         ImVec2 p1 = ImVec2(p.x, p.y);
-        ImVec2 p2 = ImVec2(p.x + cosf(p.rotation) * p.size, p.y + sinf(p.rotation) * p.size * 1.5f);
         
         ImU32 petalColor = IM_COL32(255, 182, 193, (int)(p.alpha * 255)); // Soft Pink
         drawList->AddEllipseFilled(p1, p.size * 0.8f, p.size * 1.4f, petalColor, p.rotation, 12);
@@ -383,7 +382,7 @@ ImFont* Urbanist;
     io.DisplayFramebufferScale = ImVec2(framebufferScale, framebufferScale);
     io.DeltaTime = 1.0f / float(view.preferredFramesPerSecond ?: 60);
 
-    // Apply Stream Proofing
+    // Stream Proof View Hidden Control
     if (streamProofEnabled) {
         self.view.hidden = YES;
     } else {
@@ -418,7 +417,7 @@ ImFont* Urbanist;
         style.Colors[ImGuiCol_ButtonHovered]          = accent_dim;
         style.Colors[ImGuiCol_ButtonActive]           = accent;
 
-        // Render 3D Sakura Falling Animation
+        // Render 3D Sakura Falling Animation Background
         ImDrawList* backgroundDrawList = ImGui::GetBackgroundDrawList();
         [self renderSakuraPetals:backgroundDrawList width:io.DisplaySize.x height:io.DisplaySize.y];
 
