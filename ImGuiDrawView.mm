@@ -364,9 +364,10 @@ ImFont* Urbanist;
         if (p.x > screenWidth) p.x = 0;
 
         ImVec2 p1 = ImVec2(p.x, p.y);
+        ImVec2 radius = ImVec2(p.size * 0.8f, p.size * 1.4f); // Fixed Error: Combined arguments into ImVec2
         
         ImU32 petalColor = IM_COL32(255, 182, 193, (int)(p.alpha * 255)); // Soft Pink
-        drawList->AddEllipseFilled(p1, p.size * 0.8f, p.size * 1.4f, petalColor, p.rotation, 12);
+        drawList->AddEllipseFilled(p1, radius, petalColor, p.rotation, 12);
     }
 }
 
