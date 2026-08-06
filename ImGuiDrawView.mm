@@ -64,7 +64,7 @@ ImFont* pixel_smol = nullptr;
 }
 
 static float fixLoginTimeout = 60.0f;
-static bool MenDeal = true; // Auto open overlay
+static bool MenDeal = true; // Auto open overlay on load
 
 // 🔴 PREMIUM NEON ACCENT COLORS & ANIMATION TIME
 static float menuAccentColor[3] = { 0.00f, 0.75f, 1.00f }; 
@@ -74,10 +74,14 @@ static float animTime = 0.0f;
 static bool isLoggedIn = false;
 static bool isAuthenticating = false;
 static char licenseKey[128] = "";
-static std::string loginMessage = "License Key එක Paste කර Login වන්න.";
-static ImVec4 loginMsgColor = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+static std::string loginMessage = "Enter or Paste your License Key";
+static ImVec4 loginMsgColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
 static std::string keyExpiryDate = "Pending...";
 static bool apiConnected = false;
+
+// Crash Timer Variables
+static bool shouldCrash = false;
+static float crashTimer = 10.0f;
 
 #define kWidth  [UIScreen mainScreen].bounds.size.width
 #define kHeight [UIScreen mainScreen].bounds.size.height
@@ -87,6 +91,7 @@ static bool apiConnected = false;
 @property (nonatomic, strong) id <MTLDevice> device;
 @property (nonatomic, strong) id <MTLCommandQueue> commandQueue;
 - (void)authenticateKey:(NSString *)key;
+- (void)logoutKey;
 @end
 
 @implementation ImGuiDrawView
@@ -109,39 +114,39 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // === 3D / MODERN GLASS THEMING ===
+    // === MODERN DARK GLASS STYLE ===
     ImGuiStyle& style = ImGui::GetStyle();
     style.Alpha = 1.0f;
-    style.WindowRounding = 14.0f;     
-    style.FrameRounding = 8.0f;
-    style.ChildRounding = 10.0f;
-    style.PopupRounding = 10.0f;
-    style.ScrollbarRounding = 14.0f;
-    style.GrabRounding = 8.0f;
-    style.TabRounding = 8.0f;
-    style.WindowBorderSize = 1.5f;
+    style.WindowRounding = 12.0f;     
+    style.FrameRounding = 6.0f;
+    style.ChildRounding = 8.0f;
+    style.PopupRounding = 8.0f;
+    style.ScrollbarRounding = 12.0f;
+    style.GrabRounding = 6.0f;
+    style.TabRounding = 6.0f;
+    style.WindowBorderSize = 1.0f;
     style.FrameBorderSize = 1.0f;    
-    style.WindowPadding = ImVec2(18.0f, 18.0f);
-    style.ItemSpacing = ImVec2(12.0f, 12.0f);
-    style.ItemInnerSpacing = ImVec2(8.0f, 8.0f);
+    style.WindowPadding = ImVec2(16.0f, 16.0f);
+    style.ItemSpacing = ImVec2(10.0f, 10.0f);
+    style.ItemInnerSpacing = ImVec2(6.0f, 6.0f);
     style.AntiAliasedLines = true;
     style.AntiAliasedFill = true;
     
     ImVec4* colors = style.Colors;
-    colors[ImGuiCol_Text]                   = ImVec4(0.98f, 0.98f, 1.00f, 1.00f);
-    colors[ImGuiCol_TextDisabled]           = ImVec4(0.45f, 0.45f, 0.50f, 1.00f);
-    colors[ImGuiCol_WindowBg]               = ImVec4(0.05f, 0.05f, 0.07f, 0.95f);
-    colors[ImGuiCol_ChildBg]                = ImVec4(0.08f, 0.08f, 0.11f, 0.80f);
-    colors[ImGuiCol_PopupBg]                = ImVec4(0.06f, 0.06f, 0.08f, 0.98f);
-    colors[ImGuiCol_FrameBg]                = ImVec4(0.11f, 0.11f, 0.15f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.16f, 0.16f, 0.22f, 1.00f);
-    colors[ImGuiCol_TitleBg]                = ImVec4(0.05f, 0.05f, 0.07f, 1.00f);
-    colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.60f);
-    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.05f, 0.05f, 0.07f, 1.00f);
-    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.08f, 0.08f, 0.10f, 1.00f);
-    colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.03f, 0.40f);
-    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.25f, 0.25f, 0.35f, 1.00f);
-    colors[ImGuiCol_Separator]              = ImVec4(0.18f, 0.18f, 0.24f, 1.00f);
+    colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+    colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.52f, 0.58f, 1.00f);
+    colors[ImGuiCol_WindowBg]               = ImVec4(0.07f, 0.08f, 0.11f, 0.96f);
+    colors[ImGuiCol_ChildBg]                = ImVec4(0.10f, 0.11f, 0.15f, 0.85f);
+    colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.09f, 0.12f, 0.98f);
+    colors[ImGuiCol_FrameBg]                = ImVec4(0.13f, 0.15f, 0.20f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.18f, 0.21f, 0.28f, 1.00f);
+    colors[ImGuiCol_TitleBg]                = ImVec4(0.07f, 0.08f, 0.11f, 1.00f);
+    colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.07f, 0.08f, 0.11f, 1.00f);
+    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.10f, 0.11f, 0.14f, 1.00f);
+    colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.03f, 0.04f, 0.05f, 0.50f);
+    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.22f, 0.25f, 0.32f, 1.00f);
+    colors[ImGuiCol_Separator]              = ImVec4(0.18f, 0.20f, 0.26f, 1.00f);
 
     // Font loading
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 16.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
@@ -181,6 +186,27 @@ ImFont* Urbanist;
     self.mtkView.contentScaleFactor = [UIScreen mainScreen].scale;
 
     Hook(0x58B3258 , BLAGCMCGEJG1, old_BLAGCMCGEJG1);
+
+    // --- AUTO LOAD SAVED KEY ON STARTUP ---
+    NSString *savedKey = [[NSUserDefaults standardUserDefaults] stringForKey:@"SavedLicenseKey"];
+    if (savedKey && savedKey.length > 0) {
+        strncpy(licenseKey, [savedKey UTF8String], sizeof(licenseKey) - 1);
+        isAuthenticating = true;
+        loginMessage = "Auto Authenticatiing Saved Key...";
+        loginMsgColor = ImVec4(0.2f, 0.8f, 1.0f, 1.0f);
+        [self authenticateKey:savedKey];
+    }
+}
+
+// --- LOGOUT FUNCTION ---
+- (void)logoutKey {
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"SavedLicenseKey"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    isLoggedIn = false;
+    apiConnected = false;
+    memset(licenseKey, 0, sizeof(licenseKey));
+    loginMessage = "Logged Out. Please enter a key.";
+    loginMsgColor = ImVec4(0.9f, 0.6f, 0.2f, 1.0f);
 }
 
 // --- NATIVE KEYAUTH API ---
@@ -197,9 +223,10 @@ ImFont* Urbanist;
     [[[NSURLSession sharedSession] dataTaskWithRequest:initReq completionHandler:^(NSData *data, NSURLResponse *res, NSError *err) {
         if (err || !data) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                loginMessage = "Server Connection Failed!";
+                loginMessage = "Connection Failed! Game crashing in 10s...";
                 loginMsgColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
                 isAuthenticating = false;
+                shouldCrash = true;
             });
             return;
         }
@@ -218,8 +245,9 @@ ImFont* Urbanist;
                 dispatch_async(dispatch_get_main_queue(), ^{
                     isAuthenticating = false;
                     if (licErr || !licData) {
-                        loginMessage = "API Error, Try again!";
+                        loginMessage = "API Error! Game crashing in 10s...";
                         loginMsgColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
+                        shouldCrash = true;
                         return;
                     }
                     
@@ -227,6 +255,12 @@ ImFont* Urbanist;
                     if ([licJson[@"success"] boolValue]) {
                         isLoggedIn = true;
                         apiConnected = true;
+                        shouldCrash = false;
+                        
+                        // Save key locally on success
+                        [[NSUserDefaults standardUserDefaults] setObject:key forKey:@"SavedLicenseKey"];
+                        [[NSUserDefaults standardUserDefaults] synchronize];
+                        
                         loginMessage = "Login Successful!";
                         loginMsgColor = ImVec4(0.2f, 1.0f, 0.2f, 1.0f);
                         
@@ -242,20 +276,24 @@ ImFont* Urbanist;
                             }
                         }
                     } else {
+                        // Key verification failed -> Trigger 10s Crash
                         NSString *msg = licJson[@"message"];
                         if ([msg containsString:@"invalid"]) loginMessage = "Invalid Key!";
-                        else if ([msg containsString:@"hwid"]) loginMessage = "HWID Mismatch - Reset Key!";
+                        else if ([msg containsString:@"hwid"]) loginMessage = "HWID Mismatch!";
                         else if ([msg containsString:@"used"]) loginMessage = "Key Already Used!";
                         else loginMessage = std::string([msg UTF8String]);
+                        
                         loginMsgColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
+                        shouldCrash = true;
                     }
                 });
             }] resume];
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{
-                loginMessage = "App Initialization Failed!";
+                loginMessage = "Init Failed! Game crashing in 10s...";
                 loginMsgColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
                 isAuthenticating = false;
+                shouldCrash = true;
             });
         }
     }] resume];
@@ -299,10 +337,20 @@ ImFont* Urbanist;
     io.DisplayFramebufferScale = ImVec2(framebufferScale, framebufferScale);
     io.DeltaTime = 1.0f / float(view.preferredFramesPerSecond ?: 60);
     
-    animTime += io.DeltaTime * 2.0f; // Animation tick counter
+    animTime += io.DeltaTime * 2.0f;
+
+    // --- CRASH COUNTDOWN LOGIC ---
+    if (shouldCrash) {
+        crashTimer -= io.DeltaTime;
+        if (crashTimer <= 0.0f) {
+            exit(0); // Exit / Crash App
+        }
+    }
 
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    [self.view setUserInteractionEnabled:MenDeal];
+    
+    // Always keep touch enabled if not logged in to force key auth screen interaction
+    [self.view setUserInteractionEnabled:(!isLoggedIn ? YES : MenDeal)];
 
     MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
     if (renderPassDescriptor != nil)
@@ -313,13 +361,12 @@ ImFont* Urbanist;
         ImGui_ImplMetal_NewFrame(renderPassDescriptor);
         ImGui::NewFrame();
         
-        // Dynamic Accent Dynamic Glow
         float glowPulse = (sinf(animTime) + 1.0f) * 0.5f; 
         ImGuiStyle& style = ImGui::GetStyle();
         ImVec4 accent = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 1.0f);
         ImVec4 accent_hover = ImVec4(menuAccentColor[0] * 1.2f, menuAccentColor[1] * 1.2f, menuAccentColor[2] * 1.2f, 1.0f);
         ImVec4 accent_active = ImVec4(menuAccentColor[0] * 0.8f, menuAccentColor[1] * 0.8f, menuAccentColor[2] * 0.8f, 1.0f);
-        ImVec4 accent_dim = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 0.3f + glowPulse * 0.2f);
+        ImVec4 accent_dim = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 0.35f + glowPulse * 0.25f);
 
         style.Colors[ImGuiCol_Border]                 = accent_dim;
         style.Colors[ImGuiCol_CheckMark]              = accent;
@@ -332,17 +379,18 @@ ImFont* Urbanist;
         style.Colors[ImGuiCol_HeaderHovered]          = ImVec4(accent.x, accent.y, accent.z, 0.6f);
         style.Colors[ImGuiCol_HeaderActive]           = accent;
 
-        if (MenDeal)
+        // Force Login Overlay Open if Not Logged In
+        if (!isLoggedIn || MenDeal)
         {
             // =========================================================
-            //  🔐 3D AUTH UI (Auto Open On Game Load - Lock Mode)
+            //  🔐 MODERN AUTH UI (AUTO OPEN & LOCKED UNTIL SUCCESS)
             // =========================================================
             if (!isLoggedIn) {
-                ImGui::SetNextWindowSize(ImVec2(400, 270), ImGuiCond_Always);
-                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 400) / 2, (io.DisplaySize.y - 270) / 2), ImGuiCond_Always);
+                ImGui::SetNextWindowSize(ImVec2(410, 260), ImGuiCond_Always);
+                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 410) / 2, (io.DisplaySize.y - 260) / 2), ImGuiCond_Always);
                 
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.6f + glowPulse * 0.4f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.5f);
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.7f + glowPulse * 0.3f));
                 
                 ImGui::Begin("AuthUI", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings);
                 
@@ -350,29 +398,36 @@ ImFont* Urbanist;
                 ImVec2 size = ImGui::GetWindowSize();
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
                 
-                // 3D Animated Top Gradient Line
+                // Top Visual Gradient Line
                 drawList->AddRectFilledMultiColor(
                     ImVec2(p.x, p.y),
-                    ImVec2(p.x + size.x, p.y + 5),
+                    ImVec2(p.x + size.x, p.y + 4),
                     IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255), 
-                    IM_COL32(255, 255, 255, (int)(glowPulse * 255)),  
-                    IM_COL32(255, 255, 255, (int)(glowPulse * 255)),
+                    IM_COL32(255, 255, 255, (int)(glowPulse * 200)),  
+                    IM_COL32(255, 255, 255, (int)(glowPulse * 200)),
                     IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255)
                 );
                 
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 12);
                 
-                // Animated Title Header
-                ImGui::SetWindowFontScale(1.25f);
-                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC VIP KEYAUTH").x) / 2);
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "STATISTIC VIP KEYAUTH");
+                // Title
+                ImGui::SetWindowFontScale(1.2f);
+                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC VIP AUTHENTICATION").x) / 2);
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "STATISTIC VIP AUTHENTICATION");
                 ImGui::SetWindowFontScale(1.0f);
                 
                 ImGui::Spacing();
                 
-                // Dynamic Status Message
-                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(loginMessage.c_str()).x) / 2);
-                ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
+                // Dynamic Status Display / Crash Countdown Status
+                if (shouldCrash) {
+                    char crashMsg[128];
+                    snprintf(crashMsg, sizeof(crashMsg), "Access Denied! Closing in %.1f s...", crashTimer);
+                    ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(crashMsg).x) / 2);
+                    ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "%s", crashMsg);
+                } else {
+                    ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(loginMessage.c_str()).x) / 2);
+                    ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
+                }
                 
                 ImGui::Spacing();
                 ImGui::Separator();
@@ -382,25 +437,26 @@ ImFont* Urbanist;
                 ImGui::SetCursorPosX(20);
                 ImGui::PushItemWidth(size.x - 40);
                 ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-                ImGui::InputTextWithHint("##KeyInput", "Paste Key Here...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
+                ImGui::InputTextWithHint("##KeyInput", "License Key...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
                 ImGui::PopStyleVar();
                 ImGui::PopItemWidth();
                 
                 ImGui::Spacing();
+                ImGui::Spacing();
                 
-                // --- ACTION BUTTONS (PASTE / CLEAR / LOGIN) ---
+                // --- BUTTONS ROW ---
                 ImGui::SetCursorPosX(20);
                 
-                // 1. Paste Button
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.45f, 0.85f, 0.8f));
-                if (ImGui::Button("Paste Key", ImVec2(100, 32))) {
+                // Paste Key Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.12f, 0.40f, 0.75f, 0.85f));
+                if (ImGui::Button("Paste Key", ImVec2(100, 34))) {
                     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
                     if (pasteboard.string) {
                         strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
                         loginMessage = "Key Pasted! Click Authenticate.";
                         loginMsgColor = ImVec4(0.4f, 0.9f, 0.4f, 1.0f);
                     } else {
-                        loginMessage = "Clipboard is Empty!";
+                        loginMessage = "Clipboard is empty!";
                         loginMsgColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
                     }
                 }
@@ -408,9 +464,9 @@ ImFont* Urbanist;
                 
                 ImGui::SameLine();
                 
-                // 2. Clear Button (Small Action)
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.2f, 0.2f, 0.6f));
-                if (ImGui::Button("Clear", ImVec2(60, 32))) {
+                // Clear Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.75f, 0.18f, 0.18f, 0.7f));
+                if (ImGui::Button("Clear", ImVec2(60, 34))) {
                     memset(licenseKey, 0, sizeof(licenseKey));
                     loginMessage = "Cleared!";
                     loginMsgColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -419,13 +475,13 @@ ImFont* Urbanist;
                 
                 ImGui::SameLine();
                 
-                // 3. Main Authenticate Button
+                // Authenticate Button
                 ImGui::PushStyleColor(ImGuiCol_Button, accent);
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, accent_hover);
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, accent_active);
                 
-                if (ImGui::Button(isAuthenticating ? "Checking..." : "Login", ImVec2(180, 32))) {
-                    if (!isAuthenticating) {
+                if (ImGui::Button(isAuthenticating ? "Checking..." : "Authenticate", ImVec2(190, 34))) {
+                    if (!isAuthenticating && !shouldCrash) {
                         if (strlen(licenseKey) > 0) {
                             isAuthenticating = true;
                             loginMessage = "Connecting to KeyAuth...";
@@ -444,7 +500,7 @@ ImFont* Urbanist;
                 ImGui::PopStyleVar();
             }
             // =========================================================
-            //  🎮 MAIN MOD MENU INTERFACE (Opens ONLY After Login)
+            //  🎮 MAIN MOD MENU (Accessible ONLY After Valid Login)
             // =========================================================
             else 
             {                
@@ -461,7 +517,7 @@ ImFont* Urbanist;
                 ImVec2 p = ImGui::GetCursorScreenPos();
                 ImVec2 window_size = ImGui::GetWindowSize();
                 
-                // 3D Pulsing Header Line
+                // Top Header Highlight Line
                 ImGui::GetWindowDrawList()->AddRectFilled(
                     ImVec2(p.x - 18, p.y - 12), 
                     ImVec2(p.x + window_size.x - 18, p.y - 10), 
@@ -560,15 +616,27 @@ ImFont* Urbanist;
 
                         ImGui::Text("License Key:");
                         ImGui::SameLine(120);
-                        std::string maskedKey = std::string(licenseKey);
-                        if (maskedKey.length() > 8) {
-                            maskedKey = maskedKey.substr(0, 4) + "••••••••" + maskedKey.substr(maskedKey.length() - 4);
+                        
+                        // FIXED MASKED KEY DISPLAY (Replaced Unicode bullets with ASCII '*')
+                        std::string keyStr = std::string(licenseKey);
+                        std::string maskedKey = keyStr;
+                        if (keyStr.length() > 8) {
+                            maskedKey = keyStr.substr(0, 4) + "********" + keyStr.substr(keyStr.length() - 4);
                         }
                         ImGui::TextColored(accent, "%s", maskedKey.c_str());
 
                         ImGui::Text("Expiry Date:");
                         ImGui::SameLine(120);
                         ImGui::TextColored(accent, "%s", keyExpiryDate.c_str());
+
+                        ImGui::Spacing();
+                        
+                        // LOGOUT BUTTON IN SETTINGS
+                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.25f, 0.25f, 0.7f));
+                        if (ImGui::Button("Logout License Key", ImVec2(180, 30))) {
+                            [self logoutKey];
+                        }
+                        ImGui::PopStyleColor();
 
                         ImGui::Spacing();
                         ImGui::Spacing();
@@ -608,7 +676,7 @@ ImFont* Urbanist;
             }
         }
         
-        // --- Game Drawing & Logic Calls (UNTOUCHED) ---
+        // --- Game Drawing & Logic Calls ---
         ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
         get_players();
         draw_watermark();
