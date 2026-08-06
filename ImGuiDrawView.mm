@@ -30,6 +30,7 @@
 #import "IMGUI/imgui_impl_metal.h"
 #import "IMGUI/zzz.h"
 
+// Font variables
 ImFont* verdana_smol = nullptr;
 ImFont* pixel_big = nullptr;
 ImFont* pixel_smol = nullptr;
@@ -108,20 +109,17 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // === FIX BLURRY UI: RETINA HIGHDPI SCALE CONFIG ===
+    // === FIX BLURRY UI: SAFE RETINA HIGHDPI SCALE CONFIG ===
     CGFloat scale = kScale;
-    if (scale < 2.0f) scale = 2.0f; // Force high quality
+    if (scale < 2.0f) scale = 2.0f; 
 
     ImFontConfig fontConfig;
-    fontConfig.OversampleH = 3;
-    fontConfig.OversampleV = 3;
+    fontConfig.OversampleH = 2; // (Changed from 3 to 2 to prevent Memory Crash)
+    fontConfig.OversampleV = 2;
     fontConfig.PixelSnapH = true;
 
-    // Load fonts in high resolution
-    ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 16.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
-    verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof(verdana), 40.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_big = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 128.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_smol = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 20.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
+    // Loading only the main font with a safe size to prevent Texture Atlas overflow crash
+    ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
     
     // Scale UI back down to normal size to make it extremely crisp!
     io.FontGlobalScale = 1.0f / scale;
@@ -192,6 +190,9 @@ ImFont* Urbanist;
     self.mtkView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
     self.mtkView.clipsToBounds = YES;
 
+    // Show menu initially to make sure Login is visible upon starting
+    MenDeal = true;
+
     Hook(0x58B3258 , BLAGCMCGEJG1, old_BLAGCMCGEJG1);
 }
 
@@ -238,7 +239,7 @@ ImFont* Urbanist;
                     NSDictionary *licJson = [NSJSONSerialization JSONObjectWithData:licData options:0 error:nil];
                     if ([licJson[@"success"] boolValue]) {
                         isLoggedIn = true;
-                        MenDeal = true; // Auto open main menu on success
+                        MenDeal = true; 
                         apiConnected = true;
                         loginMessage = "Login Successful!";
                         loginMsgColor = ImVec4(0.2f, 1.0f, 0.2f, 1.0f);
@@ -319,10 +320,6 @@ ImFont* Urbanist;
     
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
         
-    // --- FORCE INTERACTION ON LOGIN ---
-    bool shouldInteract = !isLoggedIn || MenDeal;
-    [self.view setUserInteractionEnabled:shouldInteract];
-
     MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
     if (renderPassDescriptor != nil)
     {
@@ -354,16 +351,17 @@ ImFont* Urbanist;
         style.Colors[ImGuiCol_TabActive]              = accent;
 
         // ==========================================
-        //           LOGIN INTERFACE (ALWAYS ON TOP)
+        //           LOGIN INTERFACE
         // ==========================================
         if (!isLoggedIn) 
         {
-            // Center the login window perfectly based on Display Size
+            // Lock Menu Variable to Force Login
+            MenDeal = true; 
+
             ImVec2 loginSize = ImVec2(420, 280);
             ImGui::SetNextWindowSize(loginSize, ImGuiCond_Always);
             ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - loginSize.x) / 2.0f, (io.DisplaySize.y - loginSize.y) / 2.0f), ImGuiCond_Always);
             
-            // Add custom window properties for Login
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 16.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
             ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.07f, 0.07f, 0.08f, 0.98f));
@@ -374,7 +372,6 @@ ImFont* Urbanist;
             ImVec2 size = ImGui::GetWindowSize();
             ImDrawList* drawList = ImGui::GetWindowDrawList();
             
-            // Premium 3D Top Glow Header Gradient
             drawList->AddRectFilledMultiColor(
                 ImVec2(p.x - 18, p.y - 18),
                 ImVec2(p.x + size.x - 18, p.y + 8),
@@ -386,20 +383,15 @@ ImFont* Urbanist;
             
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 20);
             
-            // Application Title (Centered)
             ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC PRO").x) / 2);
             ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "STATISTIC PRO");
             ImGui::Spacing();
             
-            // Status Message
             ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(loginMessage.c_str()).x) / 2);
             ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
             
-            ImGui::Spacing();
-            ImGui::Spacing();
-            ImGui::Spacing();
+            ImGui::Spacing(); ImGui::Spacing(); ImGui::Spacing();
             
-            // Text Input Setup
             ImGui::SetCursorPosX(35);
             ImGui::PushItemWidth(size.x - 70);
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
@@ -408,20 +400,19 @@ ImFont* Urbanist;
             ImGui::PopStyleVar(2);
             ImGui::PopItemWidth();
             
-            ImGui::Spacing();
-            ImGui::Spacing();
-            ImGui::Spacing();
-            ImGui::Spacing();
+            ImGui::Spacing(); ImGui::Spacing(); ImGui::Spacing(); ImGui::Spacing();
             
-            // Action Buttons Setup
-            ImGui::SetCursorPosX((size.x - 280) / 2); // Center both buttons
+            ImGui::SetCursorPosX((size.x - 280) / 2); 
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
             
             if (ImGui::Button("Paste Key", ImVec2(130, 45))) {
-                UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                if (pasteboard.string) {
-                    strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
-                }
+                // Safely accessing pasteboard on the Main Thread to avoid crashes
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                    if (pasteboard.string) {
+                        strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
+                    }
+                });
             }
             
             ImGui::SameLine(0, 20);
@@ -456,7 +447,6 @@ ImFont* Urbanist;
             
             ImVec2 p = ImGui::GetCursorScreenPos();
             ImVec2 window_size = ImGui::GetWindowSize();
-            // Sleek side or top accent indicator
             ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x - 18, p.y - 18), ImVec2(p.x + window_size.x - 18, p.y - 14), ImColor(accent));
             
             ImGui::Spacing();
