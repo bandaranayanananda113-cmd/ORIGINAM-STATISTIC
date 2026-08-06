@@ -1,0 +1,50 @@
+name: Build iOS Mod Menu
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Tweak
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Theos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+
+      - name: Build with Theos
+        run: |
+          MAKEFILE_PATH=$(find . -iname "makefile" | head -n 1)
+          
+          if [ -z "$MAKEFILE_PATH" ]; then
+            echo "Error: Makefile එක හොයාගන්න නෑ!"
+            exit 1
+          fi
+          
+          cd "$(dirname "$MAKEFILE_PATH")"
+          
+          echo "--- Compiler Warnings මඟහැරීම ---"
+          echo "ADDITIONAL_CFLAGS += -Wno-error -Wno-nontrivial-memcall -Wno-module-import-in-extern-c" >> Makefile
+          echo "ADDITIONAL_CCFLAGS += -Wno-error -Wno-nontrivial-memcall -Wno-module-import-in-extern-c" >> Makefile
+          echo "-----------------------------------"
+          
+          make FINALPACKAGE=1
+          
+          echo "--- Dylib ෆයිල් එක එළියට ගැනීම ---"
+          mkdir -p Final_Output
+          find . -name "*.dylib" -exec cp {} ./Final_Output/ \;
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModMenu-Dylib
+          path: "**/Final_Output/*.dylib"
