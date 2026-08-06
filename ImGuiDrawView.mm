@@ -64,17 +64,18 @@ ImFont* pixel_smol = nullptr;
 }
 
 static float fixLoginTimeout = 60.0f;
-static bool MenDeal = true; // Auto open when loaded
+static bool MenDeal = true; // Auto open overlay
 
-// 🔴 PREMIUM ACCENT COLOR (Sleek Cyan/Blue)
-static float menuAccentColor[3] = { 0.20f, 0.60f, 1.00f }; 
+// 🔴 PREMIUM NEON ACCENT COLORS & ANIMATION TIME
+static float menuAccentColor[3] = { 0.00f, 0.75f, 1.00f }; 
+static float animTime = 0.0f;
 
 // --- LOGIN STATE VARIABLES ---
 static bool isLoggedIn = false;
 static bool isAuthenticating = false;
 static char licenseKey[128] = "";
-static std::string loginMessage = "Welcome! Please enter your license key.";
-static ImVec4 loginMsgColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+static std::string loginMessage = "License Key එක Paste කර Login වන්න.";
+static ImVec4 loginMsgColor = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
 static std::string keyExpiryDate = "Pending...";
 static bool apiConnected = false;
 
@@ -108,18 +109,18 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // === PREMIUM FLAT DARK THEME SETUP ===
+    // === 3D / MODERN GLASS THEMING ===
     ImGuiStyle& style = ImGui::GetStyle();
     style.Alpha = 1.0f;
-    style.WindowRounding = 12.0f;     
-    style.FrameRounding = 6.0f;
-    style.ChildRounding = 8.0f;
-    style.PopupRounding = 8.0f;
-    style.ScrollbarRounding = 12.0f;
-    style.GrabRounding = 6.0f;
-    style.TabRounding = 6.0f;
-    style.WindowBorderSize = 1.0f;
-    style.FrameBorderSize = 0.0f;    
+    style.WindowRounding = 14.0f;     
+    style.FrameRounding = 8.0f;
+    style.ChildRounding = 10.0f;
+    style.PopupRounding = 10.0f;
+    style.ScrollbarRounding = 14.0f;
+    style.GrabRounding = 8.0f;
+    style.TabRounding = 8.0f;
+    style.WindowBorderSize = 1.5f;
+    style.FrameBorderSize = 1.0f;    
     style.WindowPadding = ImVec2(18.0f, 18.0f);
     style.ItemSpacing = ImVec2(12.0f, 12.0f);
     style.ItemInnerSpacing = ImVec2(8.0f, 8.0f);
@@ -127,20 +128,20 @@ ImFont* Urbanist;
     style.AntiAliasedFill = true;
     
     ImVec4* colors = style.Colors;
-    colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.95f, 0.97f, 1.00f);
-    colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    colors[ImGuiCol_WindowBg]               = ImVec4(0.06f, 0.06f, 0.07f, 0.98f);
-    colors[ImGuiCol_ChildBg]                = ImVec4(0.09f, 0.09f, 0.10f, 1.00f);
-    colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.09f, 0.98f);
-    colors[ImGuiCol_FrameBg]                = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.18f, 0.18f, 0.20f, 1.00f);
-    colors[ImGuiCol_TitleBg]                = ImVec4(0.06f, 0.06f, 0.07f, 1.00f);
-    colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.06f, 0.06f, 0.07f, 1.00f);
-    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.10f, 0.10f, 0.11f, 1.00f);
-    colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-    colors[ImGuiCol_Separator]              = ImVec4(0.15f, 0.15f, 0.17f, 1.00f);
+    colors[ImGuiCol_Text]                   = ImVec4(0.98f, 0.98f, 1.00f, 1.00f);
+    colors[ImGuiCol_TextDisabled]           = ImVec4(0.45f, 0.45f, 0.50f, 1.00f);
+    colors[ImGuiCol_WindowBg]               = ImVec4(0.05f, 0.05f, 0.07f, 0.95f);
+    colors[ImGuiCol_ChildBg]                = ImVec4(0.08f, 0.08f, 0.11f, 0.80f);
+    colors[ImGuiCol_PopupBg]                = ImVec4(0.06f, 0.06f, 0.08f, 0.98f);
+    colors[ImGuiCol_FrameBg]                = ImVec4(0.11f, 0.11f, 0.15f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.16f, 0.16f, 0.22f, 1.00f);
+    colors[ImGuiCol_TitleBg]                = ImVec4(0.05f, 0.05f, 0.07f, 1.00f);
+    colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.60f);
+    colors[ImGuiCol_TitleBgActive]          = ImVec4(0.05f, 0.05f, 0.07f, 1.00f);
+    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.08f, 0.08f, 0.10f, 1.00f);
+    colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.03f, 0.40f);
+    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.25f, 0.25f, 0.35f, 1.00f);
+    colors[ImGuiCol_Separator]              = ImVec4(0.18f, 0.18f, 0.24f, 1.00f);
 
     // Font loading
     ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 16.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
@@ -177,14 +178,12 @@ ImFont* Urbanist;
     self.mtkView.clearColor = MTLClearColorMake(0, 0, 0, 0);
     self.mtkView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
     self.mtkView.clipsToBounds = YES;
-    
-    // 🔥 FIX BLURRINESS (Retina Display High Quality Fix) 🔥
     self.mtkView.contentScaleFactor = [UIScreen mainScreen].scale;
 
     Hook(0x58B3258 , BLAGCMCGEJG1, old_BLAGCMCGEJG1);
 }
 
-// --- NATIVE KEYAUTH API CONNECTION LOGIC ---
+// --- NATIVE KEYAUTH API ---
 - (void)authenticateKey:(NSString *)key {
     NSString *name = @"STATISTIC PRO";
     NSString *ownerid = @"wFY9t1Imun";
@@ -245,7 +244,7 @@ ImFont* Urbanist;
                     } else {
                         NSString *msg = licJson[@"message"];
                         if ([msg containsString:@"invalid"]) loginMessage = "Invalid Key!";
-                        else if ([msg containsString:@"hwid"]) loginMessage = "Reset Your Key (HWID Mismatch)";
+                        else if ([msg containsString:@"hwid"]) loginMessage = "HWID Mismatch - Reset Key!";
                         else if ([msg containsString:@"used"]) loginMessage = "Key Already Used!";
                         else loginMessage = std::string([msg UTF8String]);
                         loginMsgColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f);
@@ -296,13 +295,13 @@ ImFont* Urbanist;
     io.DisplaySize.x = view.bounds.size.width;
     io.DisplaySize.y = view.bounds.size.height;
 
-    // 🔥 BLURRINESS FIX (Framebuffer Scaling)
     CGFloat framebufferScale = view.window.screen.nativeScale ?: UIScreen.mainScreen.nativeScale;
     io.DisplayFramebufferScale = ImVec2(framebufferScale, framebufferScale);
     io.DeltaTime = 1.0f / float(view.preferredFramesPerSecond ?: 60);
     
+    animTime += io.DeltaTime * 2.0f; // Animation tick counter
+
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-        
     [self.view setUserInteractionEnabled:MenDeal];
 
     MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
@@ -314,12 +313,13 @@ ImFont* Urbanist;
         ImGui_ImplMetal_NewFrame(renderPassDescriptor);
         ImGui::NewFrame();
         
-        // --- APPLY DYNAMIC PREMIUM COLORS GLOBALLY ---
+        // Dynamic Accent Dynamic Glow
+        float glowPulse = (sinf(animTime) + 1.0f) * 0.5f; 
         ImGuiStyle& style = ImGui::GetStyle();
         ImVec4 accent = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 1.0f);
-        ImVec4 accent_hover = ImVec4(menuAccentColor[0] * 1.15f, menuAccentColor[1] * 1.15f, menuAccentColor[2] * 1.15f, 1.0f);
-        ImVec4 accent_active = ImVec4(menuAccentColor[0] * 0.85f, menuAccentColor[1] * 0.85f, menuAccentColor[2] * 0.85f, 1.0f);
-        ImVec4 accent_dim = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 0.3f);
+        ImVec4 accent_hover = ImVec4(menuAccentColor[0] * 1.2f, menuAccentColor[1] * 1.2f, menuAccentColor[2] * 1.2f, 1.0f);
+        ImVec4 accent_active = ImVec4(menuAccentColor[0] * 0.8f, menuAccentColor[1] * 0.8f, menuAccentColor[2] * 0.8f, 1.0f);
+        ImVec4 accent_dim = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 0.3f + glowPulse * 0.2f);
 
         style.Colors[ImGuiCol_Border]                 = accent_dim;
         style.Colors[ImGuiCol_CheckMark]              = accent;
@@ -331,45 +331,43 @@ ImFont* Urbanist;
         style.Colors[ImGuiCol_Header]                 = accent_dim;
         style.Colors[ImGuiCol_HeaderHovered]          = ImVec4(accent.x, accent.y, accent.z, 0.6f);
         style.Colors[ImGuiCol_HeaderActive]           = accent;
-        style.Colors[ImGuiCol_Tab]                    = ImVec4(0.09f, 0.09f, 0.10f, 1.00f);
-        style.Colors[ImGuiCol_TabHovered]             = ImVec4(accent.x, accent.y, accent.z, 0.7f);
-        style.Colors[ImGuiCol_TabActive]              = accent;
 
         if (MenDeal)
         {
-            // ==========================================
-            //           LOGIN INTERFACE (Premium)
-            // ==========================================
+            // =========================================================
+            //  🔐 3D AUTH UI (Auto Open On Game Load - Lock Mode)
+            // =========================================================
             if (!isLoggedIn) {
-                ImGui::SetNextWindowSize(ImVec2(420, 260), ImGuiCond_Always);
-                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 420) / 2, (io.DisplaySize.y - 260) / 2), ImGuiCond_Always);
+                ImGui::SetNextWindowSize(ImVec2(400, 270), ImGuiCond_Always);
+                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 400) / 2, (io.DisplaySize.y - 270) / 2), ImGuiCond_Always);
                 
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.5f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.6f + glowPulse * 0.4f));
                 
-                ImGui::Begin("LoginUI", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings);
+                ImGui::Begin("AuthUI", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings);
                 
                 ImVec2 p = ImGui::GetCursorScreenPos();
                 ImVec2 size = ImGui::GetWindowSize();
                 ImDrawList* drawList = ImGui::GetWindowDrawList();
                 
-                // Sleek Top Gradient Line
+                // 3D Animated Top Gradient Line
                 drawList->AddRectFilledMultiColor(
                     ImVec2(p.x, p.y),
-                    ImVec2(p.x + size.x, p.y + 4),
+                    ImVec2(p.x + size.x, p.y + 5),
                     IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255), 
-                    IM_COL32(255, 255, 255, 255),  
-                    IM_COL32(255, 255, 255, 255),
+                    IM_COL32(255, 255, 255, (int)(glowPulse * 255)),  
+                    IM_COL32(255, 255, 255, (int)(glowPulse * 255)),
                     IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255)
                 );
                 
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 20);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15);
                 
-                // Centered App Name
-                ImGui::SetWindowFontScale(1.2f);
-                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC PRO").x) / 2);
-                ImGui::TextColored(ImVec4(1, 1, 1, 1), "STATISTIC PRO");
+                // Animated Title Header
+                ImGui::SetWindowFontScale(1.25f);
+                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC VIP KEYAUTH").x) / 2);
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "STATISTIC VIP KEYAUTH");
                 ImGui::SetWindowFontScale(1.0f);
+                
                 ImGui::Spacing();
                 
                 // Dynamic Status Message
@@ -377,57 +375,77 @@ ImFont* Urbanist;
                 ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
                 
                 ImGui::Spacing();
+                ImGui::Separator();
                 ImGui::Spacing();
                 
-                // License Key Input (Read Only Visual)
-                ImGui::SetCursorPosX(30);
-                ImGui::PushItemWidth(size.x - 60);
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 12));
-                ImGui::InputTextWithHint("##KeyInput", "Your License Key...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
-                ImGui::PopStyleVar(2);
+                // Key Input Field
+                ImGui::SetCursorPosX(20);
+                ImGui::PushItemWidth(size.x - 40);
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+                ImGui::InputTextWithHint("##KeyInput", "Paste Key Here...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
+                ImGui::PopStyleVar();
                 ImGui::PopItemWidth();
                 
                 ImGui::Spacing();
-                ImGui::Spacing();
-                ImGui::Spacing();
                 
-                // One-Click Magic Button
-                ImGui::SetCursorPosX((size.x - 220) / 2);
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+                // --- ACTION BUTTONS (PASTE / CLEAR / LOGIN) ---
+                ImGui::SetCursorPosX(20);
+                
+                // 1. Paste Button
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.45f, 0.85f, 0.8f));
+                if (ImGui::Button("Paste Key", ImVec2(100, 32))) {
+                    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                    if (pasteboard.string) {
+                        strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
+                        loginMessage = "Key Pasted! Click Authenticate.";
+                        loginMsgColor = ImVec4(0.4f, 0.9f, 0.4f, 1.0f);
+                    } else {
+                        loginMessage = "Clipboard is Empty!";
+                        loginMsgColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+                    }
+                }
+                ImGui::PopStyleColor();
+                
+                ImGui::SameLine();
+                
+                // 2. Clear Button (Small Action)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.85f, 0.2f, 0.2f, 0.6f));
+                if (ImGui::Button("Clear", ImVec2(60, 32))) {
+                    memset(licenseKey, 0, sizeof(licenseKey));
+                    loginMessage = "Cleared!";
+                    loginMsgColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+                }
+                ImGui::PopStyleColor();
+                
+                ImGui::SameLine();
+                
+                // 3. Main Authenticate Button
                 ImGui::PushStyleColor(ImGuiCol_Button, accent);
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, accent_hover);
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, accent_active);
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
                 
-                if (ImGui::Button(isAuthenticating ? "Authenticating..." : "Paste & Login", ImVec2(220, 45))) {
+                if (ImGui::Button(isAuthenticating ? "Checking..." : "Login", ImVec2(180, 32))) {
                     if (!isAuthenticating) {
-                        UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                        if (pasteboard.string) {
-                            strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
-                        }
-                        
                         if (strlen(licenseKey) > 0) {
                             isAuthenticating = true;
-                            loginMessage = "Connecting to Secure Server...";
+                            loginMessage = "Connecting to KeyAuth...";
                             loginMsgColor = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
                             [self authenticateKey:[NSString stringWithUTF8String:licenseKey]];
                         } else {
-                            loginMessage = "Clipboard is empty! Copy your key first.";
+                            loginMessage = "Please Enter or Paste a Key!";
                             loginMsgColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
                         }
                     }
                 }
+                ImGui::PopStyleColor(3);
                 
-                ImGui::PopStyleColor(4);
-                ImGui::PopStyleVar();
                 ImGui::End();
                 ImGui::PopStyleColor();
                 ImGui::PopStyleVar();
             }
-            // ==========================================
-            //           MAIN MENU INTERFACE (Premium)
-            // ==========================================
+            // =========================================================
+            //  🎮 MAIN MOD MENU INTERFACE (Opens ONLY After Login)
+            // =========================================================
             else 
             {                
                 CGFloat x = (view.bounds.size.width - 480) / 2;
@@ -435,19 +453,19 @@ ImFont* Urbanist;
                 ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_FirstUseEver);
                 ImGui::SetNextWindowSize(ImVec2(480, 380), ImGuiCond_FirstUseEver);
                 
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.3f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.5f);
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(accent.x, accent.y, accent.z, 0.5f));
                 
                 ImGui::Begin(oxorany(" STATISTIC KING PRO "), &MenDeal, ImGuiWindowFlags_NoCollapse);
                 
                 ImVec2 p = ImGui::GetCursorScreenPos();
                 ImVec2 window_size = ImGui::GetWindowSize();
                 
-                // Sleek Header Line under title
+                // 3D Pulsing Header Line
                 ImGui::GetWindowDrawList()->AddRectFilled(
                     ImVec2(p.x - 18, p.y - 12), 
                     ImVec2(p.x + window_size.x - 18, p.y - 10), 
-                    ImColor(accent)
+                    ImColor(accent.x, accent.y, accent.z, 0.8f + glowPulse * 0.2f)
                 );
                 
                 ImGui::Spacing();
