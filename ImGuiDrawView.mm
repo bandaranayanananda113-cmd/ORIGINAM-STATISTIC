@@ -66,7 +66,7 @@ ImFont* pixel_smol = nullptr;
 static float fixLoginTimeout = 60.0f;
 static bool MenDeal = true;
 
-// 🔴 USER CUSTOMIZABLE THEME COLOR (Default: Professional Blue)
+// 🔴 USER CUSTOMIZABLE THEME COLOR (Premium Blue)
 static float menuAccentColor[3] = { 0.16f, 0.56f, 0.96f }; 
 
 // --- LOGIN STATE VARIABLES ---
@@ -80,7 +80,7 @@ static bool apiConnected = false;
 
 #define kWidth  [UIScreen mainScreen].bounds.size.width
 #define kHeight [UIScreen mainScreen].bounds.size.height
-#define kScale [UIScreen mainScreen].scale
+#define kScale  [UIScreen mainScreen].scale
 
 @interface ImGuiDrawView () <MTKViewDelegate>
 @property (nonatomic, strong) id <MTLDevice> device;
@@ -108,42 +108,60 @@ ImFont* Urbanist;
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // === PROFESSIONAL FLAT DARK THEME SETUP ===
+    // === FIX BLURRY UI: RETINA HIGHDPI SCALE CONFIG ===
+    CGFloat scale = kScale;
+    if (scale < 2.0f) scale = 2.0f; // Force high quality
+
+    ImFontConfig fontConfig;
+    fontConfig.OversampleH = 3;
+    fontConfig.OversampleV = 3;
+    fontConfig.PixelSnapH = true;
+
+    // Load fonts in high resolution
+    ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 16.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
+    verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof(verdana), 40.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
+    pixel_big = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 128.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
+    pixel_smol = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 20.0f * scale, &fontConfig, io.Fonts->GetGlyphRangesCyrillic());
+    
+    // Scale UI back down to normal size to make it extremely crisp!
+    io.FontGlobalScale = 1.0f / scale;
+
+    // === PREMIUM FLAT DARK THEME SETUP ===
     ImGuiStyle& style = ImGui::GetStyle();
     style.Alpha = 1.0f;
-    style.WindowRounding = 8.0f;     
-    style.FrameRounding = 4.0f;
-    style.ChildRounding = 6.0f;
-    style.PopupRounding = 6.0f;
-    style.ScrollbarRounding = 6.0f;
-    style.GrabRounding = 4.0f;
-    style.TabRounding = 4.0f;
-    style.WindowBorderSize = 1.0f;
+    style.WindowRounding = 12.0f;     
+    style.FrameRounding = 6.0f;
+    style.ChildRounding = 8.0f;
+    style.PopupRounding = 8.0f;
+    style.ScrollbarRounding = 8.0f;
+    style.GrabRounding = 6.0f;
+    style.TabRounding = 6.0f;
+    style.WindowBorderSize = 0.0f;
     style.FrameBorderSize = 1.0f;    
-    style.WindowPadding = ImVec2(16.0f, 16.0f);
-    style.ItemSpacing = ImVec2(10.0f, 12.0f);
+    style.WindowPadding = ImVec2(18.0f, 18.0f);
+    style.ItemSpacing = ImVec2(12.0f, 14.0f);
     style.ItemInnerSpacing = ImVec2(8.0f, 8.0f);
     
+    // Anti-Aliasing Enable for Smooth Edges
+    style.AntiAliasedLines = true;
+    style.AntiAliasedFill = true;
+    style.AntiAliasedLinesUseTex = true;
+
     ImVec4* colors = style.Colors;
-    colors[ImGuiCol_Text]                   = ImVec4(0.92f, 0.92f, 0.94f, 1.00f);
-    colors[ImGuiCol_TextDisabled]           = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-    colors[ImGuiCol_WindowBg]               = ImVec4(0.10f, 0.10f, 0.11f, 0.98f);
-    colors[ImGuiCol_ChildBg]                = ImVec4(0.13f, 0.13f, 0.14f, 1.00f);
-    colors[ImGuiCol_PopupBg]                = ImVec4(0.08f, 0.08f, 0.08f, 0.98f);
-    colors[ImGuiCol_FrameBg]                = ImVec4(0.16f, 0.16f, 0.17f, 1.00f);
-    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
-    colors[ImGuiCol_TitleBg]                = ImVec4(0.12f, 0.12f, 0.13f, 1.00f);
+    colors[ImGuiCol_Text]                   = ImVec4(0.95f, 0.95f, 0.97f, 1.00f);
+    colors[ImGuiCol_TextDisabled]           = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
+    colors[ImGuiCol_WindowBg]               = ImVec4(0.08f, 0.08f, 0.09f, 0.97f);
+    colors[ImGuiCol_ChildBg]                = ImVec4(0.12f, 0.12f, 0.13f, 1.00f);
+    colors[ImGuiCol_PopupBg]                = ImVec4(0.07f, 0.07f, 0.08f, 0.98f);
+    colors[ImGuiCol_FrameBg]                = ImVec4(0.15f, 0.15f, 0.17f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered]         = ImVec4(0.22f, 0.22f, 0.24f, 1.00f);
+    colors[ImGuiCol_TitleBg]                = ImVec4(0.10f, 0.10f, 0.11f, 1.00f);
     colors[ImGuiCol_TitleBgCollapsed]       = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
-    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+    colors[ImGuiCol_MenuBarBg]              = ImVec4(0.12f, 0.12f, 0.14f, 1.00f);
     colors[ImGuiCol_ScrollbarBg]            = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+    colors[ImGuiCol_ScrollbarGrab]          = ImVec4(0.35f, 0.35f, 0.35f, 1.00f);
     colors[ImGuiCol_Separator]              = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
 
-    ImFont* font = io.Fonts->AddFontFromMemoryTTF(sansbold, sizeof(sansbold), 15.0f, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    verdana_smol = io.Fonts->AddFontFromMemoryTTF(verdana, sizeof(verdana), 40, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_big = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 128, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    pixel_smol = io.Fonts->AddFontFromMemoryTTF((void*)smallestpixel, sizeof(smallestpixel), 20, NULL, io.Fonts->GetGlyphRangesCyrillic());
-    
     ImGui_ImplMetal_Init(_device);
 
     return self;
@@ -183,7 +201,6 @@ ImFont* Urbanist;
     NSString *ownerid = @"wFY9t1Imun";
     NSString *version = @"1.0";
     
-    // 1. Initializing KeyAuth Session
     NSString *initUrlStr = [NSString stringWithFormat:@"https://keyauth.win/api/1.2/?type=init&ver=%@&name=%@&ownerid=%@", version, [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]], ownerid];
     
     NSMutableURLRequest *initReq = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:initUrlStr]];
@@ -202,9 +219,8 @@ ImFont* Urbanist;
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
         if ([json[@"success"] boolValue]) {
             NSString *sessionId = json[@"sessionid"];
-            NSString *hwid = [[[UIDevice currentDevice] identifierForVendor] UUIDString]; // iOS HWID
+            NSString *hwid = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
             
-            // 2. License Verification
             NSString *licUrlStr = [NSString stringWithFormat:@"https://keyauth.win/api/1.2/?type=license&key=%@&hwid=%@&sessionid=%@&name=%@&ownerid=%@", key, hwid, sessionId, [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]], ownerid];
             
             NSMutableURLRequest *licReq = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:licUrlStr]];
@@ -222,11 +238,11 @@ ImFont* Urbanist;
                     NSDictionary *licJson = [NSJSONSerialization JSONObjectWithData:licData options:0 error:nil];
                     if ([licJson[@"success"] boolValue]) {
                         isLoggedIn = true;
+                        MenDeal = true; // Auto open main menu on success
                         apiConnected = true;
                         loginMessage = "Login Successful!";
                         loginMsgColor = ImVec4(0.2f, 1.0f, 0.2f, 1.0f);
                         
-                        // Parse Expiry Date
                         NSDictionary *info = licJson[@"info"];
                         if (info && info[@"subscriptions"]) {
                             NSArray *subs = info[@"subscriptions"];
@@ -303,7 +319,9 @@ ImFont* Urbanist;
     
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
         
-    [self.view setUserInteractionEnabled:MenDeal];
+    // --- FORCE INTERACTION ON LOGIN ---
+    bool shouldInteract = !isLoggedIn || MenDeal;
+    [self.view setUserInteractionEnabled:shouldInteract];
 
     MTLRenderPassDescriptor* renderPassDescriptor = view.currentRenderPassDescriptor;
     if (renderPassDescriptor != nil)
@@ -321,9 +339,7 @@ ImFont* Urbanist;
         ImVec4 accent_active = ImVec4(menuAccentColor[0] * 0.85f, menuAccentColor[1] * 0.85f, menuAccentColor[2] * 0.85f, 1.0f);
         ImVec4 accent_dim = ImVec4(menuAccentColor[0], menuAccentColor[1], menuAccentColor[2], 0.4f);
 
-        style.Colors[ImGuiCol_Border]                 = accent_dim;
-        style.Colors[ImGuiCol_BorderShadow]           = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-        style.Colors[ImGuiCol_TitleBgActive]          = ImVec4(0.12f, 0.12f, 0.13f, 1.00f);
+        style.Colors[ImGuiCol_Border]                 = ImVec4(accent.x, accent.y, accent.z, 0.3f);
         style.Colors[ImGuiCol_CheckMark]              = accent;
         style.Colors[ImGuiCol_SliderGrab]             = accent;
         style.Colors[ImGuiCol_SliderGrabActive]       = accent_active;
@@ -333,246 +349,251 @@ ImFont* Urbanist;
         style.Colors[ImGuiCol_Header]                 = accent_dim;
         style.Colors[ImGuiCol_HeaderHovered]          = ImVec4(accent.x, accent.y, accent.z, 0.6f);
         style.Colors[ImGuiCol_HeaderActive]           = accent;
-        style.Colors[ImGuiCol_Tab]                    = ImVec4(0.15f, 0.15f, 0.16f, 1.00f);
+        style.Colors[ImGuiCol_Tab]                    = ImVec4(0.14f, 0.14f, 0.15f, 1.00f);
         style.Colors[ImGuiCol_TabHovered]             = ImVec4(accent.x, accent.y, accent.z, 0.7f);
         style.Colors[ImGuiCol_TabActive]              = accent;
 
-        if (MenDeal)
+        // ==========================================
+        //           LOGIN INTERFACE (ALWAYS ON TOP)
+        // ==========================================
+        if (!isLoggedIn) 
         {
-            // ==========================================
-            //           LOGIN INTERFACE
-            // ==========================================
-            if (!isLoggedIn) {
-                ImGui::SetNextWindowSize(ImVec2(400, 260), ImGuiCond_Always);
-                ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - 400) / 2, (io.DisplaySize.y - 260) / 2), ImGuiCond_Always);
-                
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                
-                ImGui::Begin("Login", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar);
-                
-                ImVec2 p = ImGui::GetCursorScreenPos();
-                ImVec2 size = ImGui::GetWindowSize();
-                ImDrawList* drawList = ImGui::GetWindowDrawList();
-                
-                // 3D Premium Gradient Header Bar
-                drawList->AddRectFilledMultiColor(
-                    ImVec2(p.x - 16, p.y - 16),
-                    ImVec2(p.x + size.x - 16, p.y + 6),
-                    IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255), 
-                    IM_COL32(100, 40, 245, 255),  
-                    IM_COL32(50, 20, 200, 255),
-                    IM_COL32(accent.x*200, accent.y*200, accent.z*200, 255)
-                );
-                
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15);
-                
-                // Centered App Name
-                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC PRO").x) / 2);
-                ImGui::TextColored(ImVec4(1, 1, 1, 1), "STATISTIC PRO");
-                ImGui::Spacing();
-                
-                // Dynamic Status Message
-                ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(loginMessage.c_str()).x) / 2);
-                ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
-                
-                ImGui::Spacing();
-                ImGui::Spacing();
-                
-                // License Key Input
-                ImGui::SetCursorPosX(30);
-                ImGui::PushItemWidth(size.x - 60);
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-                ImGui::InputTextWithHint("##KeyInput", "Paste your License Key here...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
-                ImGui::PopStyleVar(2);
-                ImGui::PopItemWidth();
-                
-                ImGui::Spacing();
-                ImGui::Spacing();
-                ImGui::Spacing();
-                
-                // Buttons Centered
-                ImGui::SetCursorPosX((size.x - 260) / 2);
-                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-                
-                if (ImGui::Button("Paste Key", ImVec2(120, 40))) {
-                    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-                    if (pasteboard.string) {
-                        strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
-                    }
+            // Center the login window perfectly based on Display Size
+            ImVec2 loginSize = ImVec2(420, 280);
+            ImGui::SetNextWindowSize(loginSize, ImGuiCond_Always);
+            ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - loginSize.x) / 2.0f, (io.DisplaySize.y - loginSize.y) / 2.0f), ImGuiCond_Always);
+            
+            // Add custom window properties for Login
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 16.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.07f, 0.07f, 0.08f, 0.98f));
+            
+            ImGui::Begin("Login", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove);
+            
+            ImVec2 p = ImGui::GetCursorScreenPos();
+            ImVec2 size = ImGui::GetWindowSize();
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+            
+            // Premium 3D Top Glow Header Gradient
+            drawList->AddRectFilledMultiColor(
+                ImVec2(p.x - 18, p.y - 18),
+                ImVec2(p.x + size.x - 18, p.y + 8),
+                IM_COL32(accent.x*255, accent.y*255, accent.z*255, 255), 
+                IM_COL32(80, 40, 220, 255),  
+                IM_COL32(40, 20, 180, 255),
+                IM_COL32(accent.x*220, accent.y*220, accent.z*220, 255)
+            );
+            
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 20);
+            
+            // Application Title (Centered)
+            ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize("STATISTIC PRO").x) / 2);
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "STATISTIC PRO");
+            ImGui::Spacing();
+            
+            // Status Message
+            ImGui::SetCursorPosX((size.x - ImGui::CalcTextSize(loginMessage.c_str()).x) / 2);
+            ImGui::TextColored(loginMsgColor, "%s", loginMessage.c_str());
+            
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            
+            // Text Input Setup
+            ImGui::SetCursorPosX(35);
+            ImGui::PushItemWidth(size.x - 70);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 12));
+            ImGui::InputTextWithHint("##KeyInput", "Paste your License Key here...", licenseKey, IM_ARRAYSIZE(licenseKey), ImGuiInputTextFlags_Password);
+            ImGui::PopStyleVar(2);
+            ImGui::PopItemWidth();
+            
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            
+            // Action Buttons Setup
+            ImGui::SetCursorPosX((size.x - 280) / 2); // Center both buttons
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
+            
+            if (ImGui::Button("Paste Key", ImVec2(130, 45))) {
+                UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+                if (pasteboard.string) {
+                    strncpy(licenseKey, pasteboard.string.UTF8String, sizeof(licenseKey) - 1);
                 }
-                
-                ImGui::SameLine(0, 20);
-                
-                if (ImGui::Button(isAuthenticating ? "Loading..." : "Login", ImVec2(120, 40))) {
-                    if (strlen(licenseKey) > 0 && !isAuthenticating) {
-                        isAuthenticating = true;
-                        loginMessage = "Connecting to Secure Server...";
-                        loginMsgColor = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
-                        [self authenticateKey:[NSString stringWithUTF8String:licenseKey]];
-                    } else if (strlen(licenseKey) == 0) {
-                        loginMessage = "Please paste a valid key first!";
-                        loginMsgColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
-                    }
-                }
-                
-                ImGui::PopStyleVar();
-                ImGui::End();
-                ImGui::PopStyleVar(2);
             }
-            // ==========================================
-            //           MAIN MENU INTERFACE
-            // ==========================================
-            else 
-            {                
-                CGFloat x = (view.bounds.size.width - 450) / 2;
-                CGFloat y = (view.bounds.size.height - 350) / 2;
-                ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_FirstUseEver);
-                ImGui::SetNextWindowSize(ImVec2(450, 350), ImGuiCond_FirstUseEver);
-                
-                ImGui::Begin(oxorany("Statistics King PRO"), &MenDeal, ImGuiWindowFlags_NoCollapse);
-                
-                ImVec2 p = ImGui::GetCursorScreenPos();
-                ImVec2 window_size = ImGui::GetWindowSize();
-                ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x - 16, p.y - 16), ImVec2(p.x + window_size.x - 16, p.y - 13), ImColor(accent));
-                
-                ImGui::Spacing();
+            
+            ImGui::SameLine(0, 20);
+            
+            if (ImGui::Button(isAuthenticating ? "Loading..." : "Login", ImVec2(130, 45))) {
+                if (strlen(licenseKey) > 0 && !isAuthenticating) {
+                    isAuthenticating = true;
+                    loginMessage = "Connecting to Secure Server...";
+                    loginMsgColor = ImVec4(1.0f, 0.8f, 0.2f, 1.0f);
+                    [self authenticateKey:[NSString stringWithUTF8String:licenseKey]];
+                } else if (strlen(licenseKey) == 0) {
+                    loginMessage = "Please paste a valid key first!";
+                    loginMsgColor = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+                }
+            }
+            
+            ImGui::PopStyleVar();
+            ImGui::End();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar(2);
+        }
+        // ==========================================
+        //           MAIN MENU INTERFACE
+        // ==========================================
+        else if (MenDeal) 
+        {                
+            ImVec2 menuSize = ImVec2(480, 380);
+            ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - menuSize.x) / 2, (io.DisplaySize.y - menuSize.y) / 2), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(menuSize, ImGuiCond_FirstUseEver);
+            
+            ImGui::Begin(oxorany("Statistics King PRO"), &MenDeal, ImGuiWindowFlags_NoCollapse);
+            
+            ImVec2 p = ImGui::GetCursorScreenPos();
+            ImVec2 window_size = ImGui::GetWindowSize();
+            // Sleek side or top accent indicator
+            ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x - 18, p.y - 18), ImVec2(p.x + window_size.x - 18, p.y - 14), ImColor(accent));
+            
+            ImGui::Spacing();
 
-                if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) 
+            if (ImGui::BeginTabBar(oxorany("MainTabs"), ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) 
+            {
+                // === TAB 1: ESP ===
+                if (ImGui::BeginTabItem("ESP Features")) 
                 {
-                    // === TAB 1: ESP ===
-                    if (ImGui::BeginTabItem("ESP")) 
-                    {
-                        ImGui::Spacing();
-                        ImGui::Checkbox(oxorany("Enable ESP Master"), &Vars.Enable);
-                        ImGui::Separator();
-                        ImGui::Spacing();
+                    ImGui::Spacing();
+                    ImGui::Checkbox(oxorany("Enable ESP Master"), &Vars.Enable);
+                    ImGui::Separator();
+                    ImGui::Spacing();
 
-                        ImGui::Columns(2, "esp_columns", false);
-                        ImGui::Checkbox(oxorany("Show Lines"), &Vars.lines);
-                        ImGui::Checkbox(oxorany("Show Boxes"), &Vars.Box);
-                        ImGui::Checkbox(oxorany("Show Health"), &Vars.Health);
-                        ImGui::Checkbox(oxorany("Show Names"), &Vars.Name);
-                        
-                        ImGui::NextColumn();
-                        ImGui::Checkbox(oxorany("Show Skeleton"), &Vars.skeleton);
-                        ImGui::Checkbox(oxorany("Show Distance"), &Vars.Distance);
-                        ImGui::Checkbox(oxorany("3D Circle"), &Vars.circlepos);
-                        ImGui::Checkbox(oxorany("Enemy Outline"), &Vars.Outline);
-                        ImGui::Columns(1); 
-                        
-                        ImGui::Spacing();
-                        ImGui::Separator();
-                        ImGui::Spacing();
-
-                        ImGui::Checkbox(oxorany("Out of Screen Warning"), &Vars.OOF); 
-                        ImGui::Checkbox(oxorany("Total Enemy Count"), &Vars.enemycount);
-                        ImGui::EndTabItem();
-                    }
+                    ImGui::Columns(2, "esp_columns", false);
+                    ImGui::Checkbox(oxorany("Show Lines"), &Vars.lines);
+                    ImGui::Checkbox(oxorany("Show Boxes"), &Vars.Box);
+                    ImGui::Checkbox(oxorany("Show Health"), &Vars.Health);
+                    ImGui::Checkbox(oxorany("Show Names"), &Vars.Name);
                     
-                    // === TAB 2: AIMBOT ===
-                    if (ImGui::BeginTabItem("Aimbot")) 
-                    {
-                        ImGui::Spacing();
-                        ImGui::Checkbox(oxorany("Enable Master Aimbot"), &Vars.Aimbot);
-                        ImGui::Separator();
-                        ImGui::Spacing();
-
-                        ImGui::Columns(2, "aim_columns", false);
-                        ImGui::Checkbox(oxorany("Silent Aim"), &SilentAim);
-                        ImGui::Checkbox(oxorany("Visible Only"), &Vars.VisibleCheck);
-                        
-                        ImGui::NextColumn();
-                        ImGui::Checkbox(oxorany("Check Wall"), &CheckWall1);
-                        ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked);
-                        ImGui::Columns(1);
-                        
-                        ImGui::Spacing();
-                        ImGui::Separator();
-                        ImGui::Spacing();
-
-                        ImGui::SetNextItemWidth(200);
-                        ImGui::Combo("Trigger Condition", &Vars.AimWhen, Vars.dir, 4);
-
-                        ImGui::SetNextItemWidth(200);
-                        ImGui::Combo("Target Hitbox", &Vars.AimHitbox, Vars.aimHitboxes, 3);
-
-                        ImGui::SetNextItemWidth(200);
-                        ImGui::Combo("Aimbot Mode", &Vars.AimMode, Vars.aimModes, 3);
-
-                        if (Vars.AimMode == 2) {
-                            ImGui::Spacing();
-                            ImGui::SetNextItemWidth(300);
-                            ImGui::SliderFloat(oxorany("FOV Size"), &Vars.AimFov, 0.0f, 360.0f, oxorany("%.0f px Radius"));
-                        }
-                        ImGui::EndTabItem();
-                    }
-
-                    // === TAB 3: SETTINGS & INFO ===
-                    if (ImGui::BeginTabItem("Settings")) 
-                    {
-                        ImGui::Spacing();
-                        ImGui::TextDisabled("KEYAUTH DETAILS");
-                        ImGui::Separator();
-                        ImGui::Spacing();
-                        
-                        ImGui::Text("API Status:");
-                        ImGui::SameLine();
-                        if (apiConnected) {
-                            ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Connected");
-                        } else {
-                            ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Disconnected");
-                        }
-
-                        ImGui::Text("License Key:");
-                        ImGui::SameLine();
-                        std::string maskedKey = std::string(licenseKey);
-                        if (maskedKey.length() > 8) {
-                            maskedKey = maskedKey.substr(0, 4) + "...." + maskedKey.substr(maskedKey.length() - 4);
-                        }
-                        ImGui::TextColored(accent, "%s", maskedKey.c_str());
-
-                        ImGui::Text("Expiry Date:");
-                        ImGui::SameLine();
-                        ImGui::TextColored(accent, "%s", keyExpiryDate.c_str());
-
-                        ImGui::Spacing();
-                        ImGui::Spacing();
-                        ImGui::TextDisabled("UI CUSTOMIZATION");
-                        ImGui::Separator();
-                        ImGui::Spacing();
-                        
-                        ImGui::SetNextItemWidth(200);
-                        ImGui::ColorEdit3("Menu Theme Color", menuAccentColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
-                        ImGui::SameLine();
-                        ImGui::Text("Menu Accent Color");
-                        
-                        ImGui::Spacing();
-                        ImGui::Spacing();
-                        ImGui::TextDisabled("GAME FIXES");
-                        ImGui::Separator();
-                        ImGui::Spacing();
-
-                        if (ImGui::Button(oxorany("Execute Fix Login"), ImVec2(150, 30))) {
-                            self.view.hidden = YES; 
-                            MenDeal = false; 
-                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fixLoginTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                self.view.hidden = NO; 
-                                MenDeal = true; 
-                            });
-                        }
-                        ImGui::SameLine();
-                        ImGui::SetNextItemWidth(150);
-                        ImGui::SliderFloat(oxorany("##fixlogin"), &fixLoginTimeout, 40.0f, 80.0f, oxorany("Timeout: %.0f s"));
-                        
-                        ImGui::EndTabItem();
-                    }
+                    ImGui::NextColumn();
+                    ImGui::Checkbox(oxorany("Show Skeleton"), &Vars.skeleton);
+                    ImGui::Checkbox(oxorany("Show Distance"), &Vars.Distance);
+                    ImGui::Checkbox(oxorany("3D Circle"), &Vars.circlepos);
+                    ImGui::Checkbox(oxorany("Enemy Outline"), &Vars.Outline);
+                    ImGui::Columns(1); 
                     
-                    ImGui::EndTabBar();
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGui::Checkbox(oxorany("Out of Screen Warning"), &Vars.OOF); 
+                    ImGui::Checkbox(oxorany("Total Enemy Count"), &Vars.enemycount);
+                    ImGui::EndTabItem();
                 }
-                ImGui::End();
+                
+                // === TAB 2: AIMBOT ===
+                if (ImGui::BeginTabItem("Aimbot")) 
+                {
+                    ImGui::Spacing();
+                    ImGui::Checkbox(oxorany("Enable Master Aimbot"), &Vars.Aimbot);
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGui::Columns(2, "aim_columns", false);
+                    ImGui::Checkbox(oxorany("Silent Aim"), &SilentAim);
+                    ImGui::Checkbox(oxorany("Visible Only"), &Vars.VisibleCheck);
+                    
+                    ImGui::NextColumn();
+                    ImGui::Checkbox(oxorany("Check Wall"), &CheckWall1);
+                    ImGui::Checkbox(oxorany("Ignore Knocked"), &Vars.IgnoreKnocked);
+                    ImGui::Columns(1);
+                    
+                    ImGui::Spacing();
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    ImGui::SetNextItemWidth(220);
+                    ImGui::Combo("Trigger Condition", &Vars.AimWhen, Vars.dir, 4);
+
+                    ImGui::SetNextItemWidth(220);
+                    ImGui::Combo("Target Hitbox", &Vars.AimHitbox, Vars.aimHitboxes, 3);
+
+                    ImGui::SetNextItemWidth(220);
+                    ImGui::Combo("Aimbot Mode", &Vars.AimMode, Vars.aimModes, 3);
+
+                    if (Vars.AimMode == 2) {
+                        ImGui::Spacing();
+                        ImGui::SetNextItemWidth(320);
+                        ImGui::SliderFloat(oxorany("FOV Size"), &Vars.AimFov, 0.0f, 360.0f, oxorany("%.0f px Radius"));
+                    }
+                    ImGui::EndTabItem();
+                }
+
+                // === TAB 3: SETTINGS & INFO ===
+                if (ImGui::BeginTabItem("Settings")) 
+                {
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("KEYAUTH DETAILS");
+                    ImGui::Separator();
+                    ImGui::Spacing();
+                    
+                    ImGui::Text("API Status:");
+                    ImGui::SameLine();
+                    if (apiConnected) {
+                        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Connected securely");
+                    } else {
+                        ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "Disconnected");
+                    }
+
+                    ImGui::Text("License Key:");
+                    ImGui::SameLine();
+                    std::string maskedKey = std::string(licenseKey);
+                    if (maskedKey.length() > 8) {
+                        maskedKey = maskedKey.substr(0, 4) + "••••••••••••" + maskedKey.substr(maskedKey.length() - 4);
+                    }
+                    ImGui::TextColored(accent, "%s", maskedKey.c_str());
+
+                    ImGui::Text("Expiry Date:");
+                    ImGui::SameLine();
+                    ImGui::TextColored(accent, "%s", keyExpiryDate.c_str());
+
+                    ImGui::Spacing();
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("UI CUSTOMIZATION");
+                    ImGui::Separator();
+                    ImGui::Spacing();
+                    
+                    ImGui::SetNextItemWidth(220);
+                    ImGui::ColorEdit3("Menu Theme Color", menuAccentColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel);
+                    ImGui::SameLine();
+                    ImGui::Text("Accent Color");
+                    
+                    ImGui::Spacing();
+                    ImGui::Spacing();
+                    ImGui::TextDisabled("GAME FIXES");
+                    ImGui::Separator();
+                    ImGui::Spacing();
+
+                    if (ImGui::Button(oxorany("Execute Fix Login"), ImVec2(160, 35))) {
+                        self.view.hidden = YES; 
+                        MenDeal = false; 
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(fixLoginTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                            self.view.hidden = NO; 
+                            MenDeal = true; 
+                        });
+                    }
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(160);
+                    ImGui::SliderFloat(oxorany("##fixlogin"), &fixLoginTimeout, 40.0f, 80.0f, oxorany("Timeout: %.0f s"));
+                    
+                    ImGui::EndTabItem();
+                }
+                
+                ImGui::EndTabBar();
             }
+            ImGui::End();
         }
         
         // --- Game Drawing & Logic Calls (UNTOUCHED) ---
