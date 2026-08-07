@@ -204,23 +204,24 @@ Vector3 GetBonePosition(void *player, void *(*transformGetter)(void *)) {
     if (!player || !transformGetter)
         return Vector3();
     void *transform = transformGetter(player);
-    return transform ? game_sdk->get_position(game_sdk->Component_GetTransform(transform)) : Vector3();
+    return transform ? game_sdk->get_position(transform) : Vector3();
 }
 
 Vector3 GetHitboxPosition(void* player, int hitbox) {
     if (!player) return Vector3::zero();
     
     switch (hitbox) {
-        case 0: return GetBonePosition(player, game_sdk->GetHeadPositions);
-        case 1: {
-            Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions);
-            return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.2f, headPos.z);
+        case 0: // head
+            return GetBonePosition(player, game_sdk->_GetHeadPositions);
+        case 1: //Neck
+        {
+            Vector3 headPos = GetBonePosition(player, game_sdk->_GetHeadPositions);
+            return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.15f, headPos.z);
         }
-        case 2: {
-            Vector3 headPos = GetBonePosition(player, game_sdk->GetHeadPositions);
-            return headPos == Vector3::zero() ? headPos : Vector3(headPos.x, headPos.y - 0.4f, headPos.z);
-        }
-        default: return GetBonePosition(player, game_sdk->GetHeadPositions);
+        case 2: // body
+            return GetBonePosition(player, game_sdk->_newHipMods);
+        default: 
+            return GetBonePosition(player, game_sdk->_GetHeadPositions);
     }
 }
 
@@ -792,7 +793,7 @@ void aimbot()
     void *playertarget = GetClosestEnemy();
     if (!playertarget)
         return;
-    ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHeadPosition(playertarget));
+    ImVec2 EnemyLocation = Camera$$WorldToScreen::Regular(GetHitboxPosition(playertarget, Vars.AimHitbox));
     drawlineglow(draw_list, ImVec2(center.x, center.y), EnemyLocation, ImColor(255, 255, 255), 1, 3);
 }
 void draw_watermark()
