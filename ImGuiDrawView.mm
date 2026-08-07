@@ -208,7 +208,7 @@ ImFont* Urbanist;
 
     void* address[] = { (void*)getRealOffset(0x4DE1380) };
     void* function[] = { (void*)Guest };
-    Zexis(address, function, 1);
+    hook(address, function, 1);
 
     // Direct Auto Paste from Clipboard on Game Startup
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
