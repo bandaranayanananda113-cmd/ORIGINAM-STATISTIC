@@ -54,25 +54,6 @@ ImFont* pixel_smol = nullptr;
 #import "Other/H5hook.h"
 #include "Other/Paste.h"
 
-// --- ZEXIS DEFINITION (FIX FOR LINKER UNDEFINED SYMBOL ERROR) ---
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void Zexis(void* address[], void* function[], int count) {
-    if (!address || !function || count <= 0) return;
-    for (int i = 0; i < count; i++) {
-        if (address[i] && function[i]) {
-            *(void**)(address[i]) = function[i];
-        }
-    }
-}
-
-#ifdef __cplusplus
-}
-#endif
-// -----------------------------------------------------------------
-
 #define Hook(x, y, z) \
 { \
     NSString* result_##y = StaticInlineHookPatch(("Frameworks/UnityFramework.framework/UnityFramework"), x, nullptr); \
