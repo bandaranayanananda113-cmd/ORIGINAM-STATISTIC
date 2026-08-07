@@ -65,6 +65,7 @@ ImFont* pixel_smol = nullptr;
 
 static float fixLoginTimeout = 60.0f;
 static bool MenDeal = false; // Menu visibility
+static bool rsttk = false;
 
 // MENU COLOR & TRANSPARENCY
 static float menuAccentColor[4] = { 0.15f, 0.55f, 1.0f, 1.0f }; // Modern Clean Blue
@@ -100,6 +101,12 @@ static float statusMsgTimer = 0.0f;
 - (void)authenticateKey:(NSString *)key;
 - (void)triggerCrash;
 @end
+
+bool Guest(void* _this){
+    if (rsttk){
+      return true;
+    } else { return true; }
+}
 
 @implementation ImGuiDrawView
 ImFont *_espFont;
@@ -198,6 +205,10 @@ ImFont* Urbanist;
     self.view.hidden = NO;
 
     Hook(0x58B3258 , BLAGCMCGEJG1, old_BLAGCMCGEJG1);
+
+    void* address[] = { (void*)getRealOffset(0x4DE1380) };
+    void* function[] = { (void*)Guest };
+    hook(address, function, 1);
 
     // Direct Auto Paste from Clipboard on Game Startup
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.8 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -513,6 +524,7 @@ ImFont* Urbanist;
                 ImGui::Spacing();
 
                 ImGui::Checkbox("Stream Proof Mode", &streamProofEnabled);
+                ImGui::Checkbox("Enable Guest Reset", &rsttk);
                 ImGui::Spacing();
 
                 ImGui::Text("API Server:");
