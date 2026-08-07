@@ -54,6 +54,16 @@ ImFont* pixel_smol = nullptr;
 #import "Other/H5hook.h"
 #include "Other/Paste.h"
 
+// --- ZEXIS DECLARATION (FIX FOR UNDECLARED IDENTIFIER ERROR) ---
+#ifdef __cplusplus
+extern "C" {
+#endif
+void Zexis(void* address[], void* function[], int count);
+#ifdef __cplusplus
+}
+#endif
+// ------------------------------------------------------------------
+
 #define Hook(x, y, z) \
 { \
     NSString* result_##y = StaticInlineHookPatch(("Frameworks/UnityFramework.framework/UnityFramework"), x, nullptr); \
